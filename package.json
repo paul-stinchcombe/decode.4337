@@ -1,0 +1,61 @@
+{
+	"name": "tx-decode",
+	"version": "1.0.0",
+	"description": "Decode Account Abstraction transactions",
+	"main": "dist/electron-main.js",
+	"bin": {
+		"tx-decode": "./dist/cli.js"
+	},
+	"scripts": {
+		"build": "tsc && copyfiles -f src/index.html dist",
+		"start": "ts-node src/cli.ts",
+		"app": "pnpm run build && electron .",
+		"pack": "electron-builder --dir",
+		"dist": "electron-builder"
+	},
+	"dependencies": {
+		"chalk": "^4.1.2",
+		"commander": "^11.0.0",
+		"dotenv": "^16.3.1",
+		"viem": "^2.x"
+	},
+	"devDependencies": {
+		"@types/node": "^20.0.0",
+		"copyfiles": "^2.4.1",
+		"electron": "^33.4.11",
+		"electron-builder": "^25.1.8",
+		"ts-node": "^10.9.1",
+		"typescript": "^5.0.0"
+	},
+	"build": {
+		"appId": "com.txdecode.app",
+		"productName": "TX Decode",
+		"directories": {
+			"buildResources": "build",
+			"output": "release"
+		},
+		"files": [
+			"dist/**/*",
+			"node_modules/**/*"
+		],
+		"mac": {
+			"category": "public.app-category.developer-tools",
+			"target": [
+				"dmg",
+				"zip"
+			]
+		},
+		"win": {
+			"target": [
+				"nsis",
+				"portable"
+			]
+		},
+		"linux": {
+			"target": [
+				"AppImage",
+				"deb"
+			]
+		}
+	}
+}

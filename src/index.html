@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta
+			http-equiv="Content-Security-Policy"
+			content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
+		/>
+		<title>TX Decode</title>
+		<style>
+			* {
+				box-sizing: border-box;
+			}
+			html, body {
+				overflow: auto;
+				scrollbar-width: none;
+				-ms-overflow-style: none;
+			}
+			html::-webkit-scrollbar,
+			body::-webkit-scrollbar {
+				display: none;
+			}
+			body {
+				font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+				margin: 0;
+				padding: 24px;
+				background: #0f0f12;
+				color: #e4e4e7;
+				min-height: 100vh;
+			}
+			h1 {
+				font-size: 1.25rem;
+				font-weight: 600;
+				margin: 0 0 20px 0;
+				color: #fafafa;
+			}
+			label {
+				display: block;
+				font-size: 0.8rem;
+				color: #a1a1aa;
+				margin-bottom: 6px;
+			}
+			input,
+			select {
+				width: 100%;
+				padding: 10px 12px;
+				border: 1px solid #27272a;
+				border-radius: 8px;
+				background: #18181b;
+				color: #e4e4e7;
+				font-size: 0.9rem;
+				margin-bottom: 16px;
+			}
+			input:focus,
+			select:focus {
+				outline: none;
+				border-color: #3b82f6;
+			}
+			input::placeholder {
+				color: #52525b;
+			}
+			.row {
+				display: flex;
+				gap: 12px;
+				align-items: center;
+				margin-bottom: 16px;
+			}
+			.row > *:first-child {
+				flex: 1;
+			}
+			.checkbox-wrap {
+				display: flex;
+				align-items: center;
+				gap: 8px;
+				margin-bottom: 20px;
+			}
+			.checkbox-wrap input {
+				width: auto;
+				margin: 0;
+			}
+			button {
+				background: #3b82f6;
+				color: white;
+				border: none;
+				padding: 10px 20px;
+				border-radius: 8px;
+				font-size: 0.9rem;
+				font-weight: 500;
+				cursor: pointer;
+				transition: background 0.15s;
+			}
+			button:hover {
+				background: #2563eb;
+			}
+			button:disabled {
+				background: #3f3f46;
+				cursor: not-allowed;
+				opacity: 0.7;
+			}
+			#output {
+				margin-top: 24px;
+				padding: 16px;
+				background: #18181b;
+				border-radius: 8px;
+				border: 1px solid #27272a;
+				font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+				font-size: 0.8rem;
+				line-height: 1.5;
+				white-space: pre-wrap;
+				word-break: break-all;
+				min-height: 120px;
+			}
+			#output:empty::before {
+				content: 'Decoded summary will appear here...';
+				color: #52525b;
+			}
+			#output.error {
+				color: #f87171;
+			}
+			#output .summary-title {
+				font-weight: 600;
+				color: #a5b4fc;
+				margin-bottom: 8px;
+			}
+			#output .summary-line {
+				margin: 4px 0;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Transaction Decoder</h1>
+		<label for="hash">Transaction Hash</label>
+		<input type="text" id="hash" placeholder="0x..." autocomplete="off" />
+		<label for="chain">Chain</label>
+		<select id="chain">
+			<optgroup label="Mainnets">
+				<option value="8453">Base (8453)</option>
+				<option value="1">Ethereum (1)</option>
+				<option value="42161">Arbitrum (42161)</option>
+				<option value="10">Optimism (10)</option>
+				<option value="137">Polygon (137)</option>
+				<option value="1868">Soneium (1868)</option>
+			</optgroup>
+			<optgroup label="Testnets">
+				<option value="11155111">Sepolia (11155111)</option>
+				<option value="84532">Base Sepolia (84532)</option>
+				<option value="421614">Arbitrum Sepolia (421614)</option>
+				<option value="1946">Soneium Minato (1946)</option>
+			</optgroup>
+		</select>
+		<div class="checkbox-wrap">
+			<input type="checkbox" id="verbose" />
+			<label for="verbose" style="margin: 0">Show verbose output</label>
+		</div>
+		<button id="decode">Decode</button>
+		<div id="output"></div>
+
+		<script>
+			const hashInput = document.getElementById('hash');
+			const chainSelect = document.getElementById('chain');
+			const verboseCheck = document.getElementById('verbose');
+			const decodeBtn = document.getElementById('decode');
+			const output = document.getElementById('output');
+
+			decodeBtn.addEventListener('click', async () => {
+				if (!window.txDecode?.decode) {
+					output.textContent = 'Error: Decode API not available. Try restarting the app.';
+					output.className = 'error';
+					return;
+				}
+
+				const hash = hashInput.value.trim();
+				if (!hash) {
+					output.textContent = 'Please enter a transaction hash.';
+					output.className = 'error';
+					return;
+				}
+
+				decodeBtn.disabled = true;
+				output.textContent = 'Decoding...';
+				output.className = '';
+
+				try {
+					const result = await window.txDecode.decode(hash, chainSelect.value, verboseCheck.checked);
+
+					if (!result.success) {
+						output.textContent = result.error || 'Decode failed.';
+						output.className = 'error';
+						return;
+					}
+
+					let html = '';
+					if (result.verboseOutput) {
+						html += result.verboseOutput.replace(/\n/g, '<br>');
+					}
+					if (result.summary) {
+						html += '<div class="summary-title">📋 Summary</div>';
+						html += '<div class="summary-line">Amount: ' + result.summary.amount + '</div>';
+						html += '<div class="summary-line">From: ' + result.summary.from + '</div>';
+						html += '<div class="summary-line">Beneficiary: ' + result.summary.beneficiary + '</div>';
+					}
+					output.innerHTML = html || 'No summary available.';
+				} catch (err) {
+					output.textContent = String(err);
+					output.className = 'error';
+				} finally {
+					decodeBtn.disabled = false;
+				}
+			});
+		</script>
+		<div id="footer" style="display: flex; justify-content: space-between; margin-top: 24px; color: gold">
+			<span
+				>Authored by
+				<a style="color: gold; text-decoration: none" rel="noopener" href="https://www.paulstinchcombe.com" target="_blank"
+					>Paul Stinchcombe</a
+				></span
+			>
+			<span>Version 1.0.0</span>
+		</div>
+	</body>
+</html>
