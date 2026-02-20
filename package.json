@@ -1,10 +1,16 @@
 {
-	"name": "tx-decode",
+	"name": "decode-4337",
 	"version": "1.0.0",
 	"description": "Decode Account Abstraction transactions",
+	"license": "MIT",
+	"author": "Paul Stinchcombe <https://www.paulstinchcombe.com>",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/paulstinchcombe/decode-4337"
+	},
 	"main": "dist/electron-main.js",
 	"bin": {
-		"tx-decode": "./dist/cli.js"
+		"decode-4337": "./dist/cli.js"
 	},
 	"scripts": {
 		"build": "tsc && copyfiles -f src/index.html dist",
@@ -28,8 +34,8 @@
 		"typescript": "^5.0.0"
 	},
 	"build": {
-		"appId": "com.txdecode.app",
-		"productName": "TX Decode",
+		"appId": "com.decode4337.app",
+		"productName": "Decode 4337",
 		"directories": {
 			"buildResources": "build",
 			"output": "release"

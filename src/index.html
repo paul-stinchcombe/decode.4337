@@ -7,12 +7,13 @@
 			http-equiv="Content-Security-Policy"
 			content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
 		/>
-		<title>TX Decode</title>
+		<title>Decode 4337</title>
 		<style>
 			* {
 				box-sizing: border-box;
 			}
-			html, body {
+			html,
+			body {
 				overflow: auto;
 				scrollbar-width: none;
 				-ms-overflow-style: none;
@@ -98,6 +99,23 @@
 				cursor: not-allowed;
 				opacity: 0.7;
 			}
+			#footer {
+				display: flex;
+				justify-content: space-between;
+				margin-top: 24px;
+			}
+			#footer a {
+				color: rgb(6, 159, 57);
+				text-decoration: none;
+			}
+			#footer span {
+				color: rgb(186, 186, 186);
+				text-decoration: none;
+			}
+			#version {
+				color: rgb(186, 186, 186);
+				text-decoration: none;
+			}
 			#output {
 				margin-top: 24px;
 				padding: 16px;
@@ -129,7 +147,7 @@
 		</style>
 	</head>
 	<body>
-		<h1>Transaction Decoder</h1>
+		<h1>Decode 4337</h1>
 		<label for="hash">Transaction Hash</label>
 		<input type="text" id="hash" placeholder="0x..." autocomplete="off" />
 		<label for="chain">Chain</label>
@@ -210,13 +228,8 @@
 			});
 		</script>
 		<div id="footer" style="display: flex; justify-content: space-between; margin-top: 24px; color: gold">
-			<span
-				>Authored by
-				<a style="color: gold; text-decoration: none" rel="noopener" href="https://www.paulstinchcombe.com" target="_blank"
-					>Paul Stinchcombe</a
-				></span
-			>
-			<span>Version 1.0.0</span>
+			<span>Author: <a rel="noopener" href="https://www.paulstinchcombe.com" target="_blank">Paul Stinchcombe</a></span>
+			<span id="version">Version 1.0.0</span>
 		</div>
 	</body>
 </html>

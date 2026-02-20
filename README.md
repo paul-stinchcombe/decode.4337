@@ -1,4 +1,6 @@
-# TX Decode
+# Decode 4337
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A tool for decoding **Account Abstraction (ERC-4337)** transactions. Extracts the human-readable summary from `handleOps` calls on the Entry Point 0.7.0 contract—including SimpleAccount-style transfers—so you can see the formatted amount, token, sender, and beneficiary at a glance.
 
@@ -19,6 +21,14 @@ Available as a **CLI** and **Electron desktop app** for Mac, Windows, and Linux.
 **Testnets:** Sepolia, Base Sepolia, Arbitrum Sepolia, Soneium Minato
 
 Custom chain IDs can be passed via the CLI `-c` option.
+
+## Installation
+
+```bash
+git clone <repo-url>
+cd decode.tx
+pnpm install
+```
 
 ## Usage
 
@@ -44,7 +54,7 @@ node node_modules/electron/install.js
 pnpm run app
 ```
 
-The app provides a simple UI: paste a transaction hash, select a chain, optionally enable verbose output, and click Decode.
+Paste a transaction hash, select a chain, optionally enable verbose output, and click Decode.
 
 ## Build native installers
 
@@ -53,7 +63,7 @@ pnpm run build
 pnpm run dist
 ```
 
-Outputs to `release/`:
+Outputs to `release/` (e.g. `Decode 4337-1.0.0-arm64.dmg`):
 
 - **Mac:** `.dmg`, `.zip`
 - **Windows:** NSIS installer, portable `.exe`
@@ -61,12 +71,12 @@ Outputs to `release/`:
 
 ## Scripts
 
-| Script          | Description                    |
-|-----------------|--------------------------------|
-| `pnpm start`    | Run CLI (tx hash as argument)  |
-| `pnpm run app`  | Launch Electron desktop app    |
-| `pnpm run build`| Compile TypeScript             |
-| `pnpm run dist` | Package native installers     |
+| Script           | Description                    |
+|------------------|--------------------------------|
+| `pnpm start`     | Run CLI (tx hash as argument)  |
+| `pnpm run app`   | Launch Electron desktop app    |
+| `pnpm run build` | Compile TypeScript             |
+| `pnpm run dist`  | Package native installers      |
 
 ## Requirements
 
@@ -82,3 +92,7 @@ BASE_RPC_URL=https://mainnet.base.org
 ```
 
 Used when decoding Base (chain 8453) transactions.
+
+## License
+
+MIT © [Paul Stinchcombe](https://www.paulstinchcombe.com)
