@@ -1,7 +1,7 @@
 {
-	"name": "decode-4337",
+	"name": "decode-kami-4337",
 	"version": "1.0.0",
-	"description": "Decode Account Abstraction transactions",
+	"description": "Decode KAMI Account Abstraction transactions",
 	"license": "MIT",
 	"author": "Paul Stinchcombe <https://www.paulstinchcombe.com>",
 	"repository": {
@@ -13,7 +13,8 @@
 		"decode-4337": "./dist/cli.js"
 	},
 	"scripts": {
-		"build": "tsc && copyfiles -f src/index.html dist",
+		"build": "tsc && copyfiles -f src/index.html dist && copyfiles \"artifacts/**/*.json\" dist",
+		"verify-abi": "node scripts/verify-abi.js",
 		"start": "ts-node src/cli.ts",
 		"app": "pnpm run build && electron .",
 		"pack": "electron-builder --dir",
@@ -42,6 +43,7 @@
 		},
 		"files": [
 			"dist/**/*",
+			"artifacts/**/*",
 			"node_modules/**/*"
 		],
 		"mac": {

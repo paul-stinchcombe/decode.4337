@@ -30,6 +30,51 @@
 				color: #e4e4e7;
 				min-height: 100vh;
 			}
+			#app-loading {
+				position: fixed;
+				inset: 0;
+				z-index: 9999;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				background: #0f0f12;
+				transition: opacity 0.25s ease-out;
+			}
+			#app-loading.hidden {
+				opacity: 0;
+				pointer-events: none;
+			}
+			#app-loading .loader-spinner {
+				width: 48px;
+				height: 48px;
+				border: 3px solid #27272a;
+				border-top-color: #3b82f6;
+				border-radius: 50%;
+				animation: loader-spin 0.9s linear infinite;
+			}
+			#app-loading .loader-label {
+				margin-top: 20px;
+				font-size: 0.95rem;
+				color: #a1a1aa;
+				letter-spacing: 0.02em;
+			}
+			#app-loading .loader-title {
+				font-size: 1.35rem;
+				font-weight: 600;
+				color: #fafafa;
+				margin-bottom: 8px;
+			}
+			@keyframes loader-spin {
+				to { transform: rotate(360deg); }
+			}
+			#app-main {
+				opacity: 0;
+				transition: opacity 0.2s ease-out;
+			}
+			#app-main.visible {
+				opacity: 1;
+			}
 			h1 {
 				font-size: 1.25rem;
 				font-weight: 600;
@@ -139,15 +184,79 @@
 			#output .summary-title {
 				font-weight: 600;
 				color: #a5b4fc;
-				margin-bottom: 8px;
+				margin: 12px 0 8px 0;
+			}
+			#output .summary-title:first-child {
+				margin-top: 0;
 			}
 			#output .summary-line {
 				margin: 4px 0;
+				color: #c4b5fd;
+			}
+			#output .summary-line strong {
+				color: #a78bfa;
+			}
+			.call-block {
+				margin: 12px 0;
+				padding: 12px;
+				background: #1e1e24;
+				border-radius: 6px;
+				border-left: 4px solid #3b82f6;
+				box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+			}
+			.call-function {
+				margin: 4px 0;
+				color: #93c5fd;
+				font-weight: 500;
+			}
+			.call-function .fn-name {
+				color: #67e8f9;
+			}
+			.call-target {
+				margin: 4px 0;
+				color: #86efac;
+				word-break: break-all;
+			}
+			.call-args {
+				margin: 6px 0 0 0;
+				color: #d6d3d1;
+			}
+			.call-args strong {
+				color: #a8a29e;
+			}
+			.call-args ul {
+				margin: 4px 0 0 16px;
+				padding: 0;
+			}
+			.call-args li {
+				margin: 2px 0;
+			}
+			/* Verbose output line colors */
+			#output .v-gas {
+				color: #fcd34d;
+			}
+			#output .v-meta {
+				color: #94a3b8;
+			}
+			#output .v-abi {
+				color: #34d399;
+			}
+			#output .v-section {
+				color: #93c5fd;
+			}
+			#output .v-label {
+				color: #a5b4fc;
+			}
+			#output .v-error {
+				color: #f87171;
+			}
+			#output .v-line {
+				display: block;
 			}
 		</style>
 	</head>
 	<body>
-		<h1>Decode 4337</h1>
+		<h1>Decode 4337 for KAMI</h1>
 		<label for="hash">Transaction Hash</label>
 		<input type="text" id="hash" placeholder="0x..." autocomplete="off" />
 		<label for="chain">Chain</label>
@@ -175,6 +284,32 @@
 		<div id="output"></div>
 
 		<script>
+			function escapeHtml(s) {
+				const div = document.createElement('div');
+				div.textContent = s;
+				return div.innerHTML;
+			}
+			function formatVerboseHtml(text) {
+				if (!text) return '';
+				return text.split('\n').map(function(line) {
+					var esc = escapeHtml(line);
+					if (line.indexOf('Gas used') !== -1 || line.indexOf('Gas price') !== -1) return '<span class="v-line v-gas">' + esc + '</span>';
+					if (line.startsWith('Artifacts dir:')) return '<span class="v-line v-meta">' + esc + '</span>';
+					if (line.startsWith('ABI:')) return '<span class="v-line v-abi">' + esc + '</span>';
+					if (line.startsWith('Direct execute') || line.startsWith('Direct call') || line.startsWith('Inner:') || line.startsWith('Target:') || line.startsWith('Function:')) return '<span class="v-line v-section">' + esc + '</span>';
+					if (line.startsWith('Decode error:')) return '<span class="v-line v-error">' + esc + '</span>';
+					if (line.startsWith('Args:')) return '<span class="v-line v-label">' + esc + '</span>';
+					return '<span class="v-line">' + esc + '</span>';
+				}).join('<br>');
+			}
+			function requestContentResize() {
+				if (typeof window.txDecode !== 'undefined' && typeof window.txDecode.requestResize === 'function') {
+					requestAnimationFrame(function() {
+						var h = document.body.scrollHeight + 40;
+						window.txDecode.requestResize(h);
+					});
+				}
+			}
 			const hashInput = document.getElementById('hash');
 			const chainSelect = document.getElementById('chain');
 			const verboseCheck = document.getElementById('verbose');
@@ -209,16 +344,41 @@
 					}
 
 					let html = '';
+					if ((result.gasUsed != null || result.gasPriceGwei != null) && !result.verboseOutput) {
+						var gasParts = [];
+						if (result.gasUsed) gasParts.push('Gas used: ' + result.gasUsed);
+						if (result.gasPriceGwei) gasParts.push('Gas price: ' + result.gasPriceGwei + ' Gwei');
+						html += '<div class="v-gas v-line" style="margin-bottom:8px">' + escapeHtml(gasParts.join(' | ')) + '</div>';
+					}
 					if (result.verboseOutput) {
-						html += result.verboseOutput.replace(/\n/g, '<br>');
+						html += formatVerboseHtml(result.verboseOutput);
+					}
+					if (result.calls && result.calls.length > 0) {
+						html += '<div class="summary-title">📋 Decoded Calls</div>';
+						for (let i = 0; i < result.calls.length; i++) {
+							const call = result.calls[i];
+							html += '<div class="call-block">';
+							html += '<div class="call-function"><strong>Function:</strong> <span class="fn-name">' + escapeHtml(call.function) + '</span></div>';
+							html += '<div class="call-target"><strong>Target:</strong> ' + escapeHtml(call.target) + '</div>';
+							if (Object.keys(call.args).length > 0) {
+								html += '<div class="call-args"><strong>Args:</strong><ul>';
+								for (const [k, v] of Object.entries(call.args)) {
+									html += '<li>' + escapeHtml(k) + ': ' + escapeHtml(v) + '</li>';
+								}
+								html += '</ul></div>';
+							}
+							html += '</div>';
+						}
 					}
 					if (result.summary) {
 						html += '<div class="summary-title">📋 Summary</div>';
-						html += '<div class="summary-line">Amount: ' + result.summary.amount + '</div>';
-						html += '<div class="summary-line">From: ' + result.summary.from + '</div>';
-						html += '<div class="summary-line">Beneficiary: ' + result.summary.beneficiary + '</div>';
+						html += '<div class="summary-line"><strong>Amount:</strong> ' + escapeHtml(result.summary.amount) + '</div>';
+						html += '<div class="summary-line"><strong>From:</strong> ' + escapeHtml(result.summary.from) + '</div>';
+						html += '<div class="summary-line"><strong>Beneficiary:</strong> ' + escapeHtml(result.summary.beneficiary) + '</div>';
 					}
 					output.innerHTML = html || 'No summary available.';
+					output.className = '';
+					requestContentResize();
 				} catch (err) {
 					output.textContent = String(err);
 					output.className = 'error';
@@ -231,5 +391,43 @@
 			<span>Author: <a rel="noopener" href="https://www.paulstinchcombe.com" target="_blank">Paul Stinchcombe</a></span>
 			<span id="version">Version 1.0.0</span>
 		</div>
+		</div>
+		<script>
+			(function() {
+				var loading = document.getElementById('app-loading');
+				var main = document.getElementById('app-main');
+				var maxWait = 8000;
+				var start = Date.now();
+				function showApp() {
+					loading.classList.add('hidden');
+					main.classList.add('visible');
+				}
+				function check() {
+					if (window.txDecode && typeof window.txDecode.decode === 'function') {
+						showApp();
+						return true;
+					}
+					if (Date.now() - start > maxWait) {
+						showApp();
+						return true;
+					}
+					return false;
+				}
+				if (document.readyState === 'loading') {
+					document.addEventListener('DOMContentLoaded', function() {
+						if (check()) return;
+						var t = setInterval(function() {
+							if (check()) clearInterval(t);
+						}, 100);
+					});
+				} else {
+					if (!check()) {
+						var t = setInterval(function() {
+							if (check()) clearInterval(t);
+						}, 100);
+					}
+				}
+			})();
+		</script>
 	</body>
 </html>

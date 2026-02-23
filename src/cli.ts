@@ -38,6 +38,22 @@ program
 				console.log(result.verboseOutput);
 			}
 
+			if (result.calls && result.calls.length > 0) {
+				console.log(chalk.bold('\n📋 Decoded Calls'));
+				console.log(chalk.bold('----------------------------------------'));
+				for (const call of result.calls) {
+					console.log(`${chalk.cyan('Function:')} ${call.function}`);
+					console.log(`${chalk.cyan('Target:')} ${call.target}`);
+					if (Object.keys(call.args).length > 0) {
+						for (const [k, v] of Object.entries(call.args)) {
+							console.log(`  ${k}: ${v}`);
+						}
+					}
+					console.log('');
+				}
+				console.log(chalk.bold('----------------------------------------'));
+			}
+
 			if (result.summary) {
 				console.log(chalk.bold('\n📋 Summary'));
 				console.log(chalk.bold('----------------------------------------'));

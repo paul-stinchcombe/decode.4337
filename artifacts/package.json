@@ -1,0 +1,57 @@
+{
+	"name": "@paulstinchcombe/gasless-nft-tx",
+	"version": "0.17.6",
+	"description": "Complete library for deploying and managing KAMI NFT contracts with truly gasless transactions using EIP-4337 Account Abstraction. Now compatible with OpenZeppelin Contracts v5.",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"scripts": {
+		"build": "tsc && pnpm run copy-artifacts",
+		"copy-artifacts": "mkdir -p dist/KAMI-NFTs && cp -r src/KAMI-NFTs/artifacts dist/KAMI-NFTs/ && cp -r src/KAMI-NFTs/*.sol dist/KAMI-NFTs/ 2>/dev/null || true",
+		"compile:contracts": "forge build && node scripts/rebuild-artifacts.cjs",
+		"test": "vitest",
+		"test:coverage": "vitest --coverage",
+		"test:all": "pnpm exec tsx tests/run-tests.ts",
+		"test:infrastructure": "pnpm exec tsx tests/run-tests.ts infrastructure",
+		"test:sponsored": "pnpm exec tsx tests/run-tests.ts sponsored",
+		"test:legacy": "pnpm exec tsx tests/run-tests.ts legacy",
+		"test:utilities": "pnpm exec tsx tests/run-tests.ts utilities",
+		"dev": "tsc --watch",
+		"prepublishOnly": "pnpm run build",
+		"publish:beta": "pnpm publish --tag beta --access public",
+		"publish:dry-run": "pnpm publish --dry-run --access public"
+	},
+	"keywords": [
+		"ethereum",
+		"nft",
+		"gasless",
+		"simpleaccount",
+		"account-abstraction",
+		"openzeppelin-v5",
+		"erc721",
+		"erc1155"
+	],
+	"author": "Paul Stinchcombe | KAMI",
+	"license": "MIT",
+	"dependencies": {
+		"@account-abstraction/contracts": "0.7.0",
+		"ethers": "^6.13.0",
+		"tslib": "^2.6.0",
+		"viem": "^2.21.0"
+	},
+	"devDependencies": {
+		"@types/node": "^20.0.0",
+		"@vitest/coverage-v8": "^1.0.0",
+		"anvil": "^0.0.6",
+		"tsx": "^4.20.6",
+		"typescript": "^5.0.0",
+		"vitest": "^1.0.0"
+	},
+	"files": [
+		"dist/**/*",
+		"README.md",
+		"LICENSE"
+	],
+	"engines": {
+		"node": ">=18.0.0"
+	}
+}

@@ -21,6 +21,17 @@ function createWindow() {
 	});
 }
 
+const MIN_HEIGHT = 520;
+const MAX_HEIGHT = 1000;
+const WIDTH = 560;
+
+ipcMain.on('resize-window', (_, height: number) => {
+	if (mainWindow && !mainWindow.isDestroyed()) {
+		const h = Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, Math.round(height)));
+		mainWindow.setContentSize(WIDTH, h);
+	}
+});
+
 app.whenReady().then(createWindow);
 
 app.on('window-all-closed', () => {
@@ -36,8 +47,11 @@ ipcMain.handle(
 		verbose: boolean,
 	): Promise<{
 		success: boolean;
+		calls?: Array<{ function: string; target: string; args: Record<string, string> }>;
 		summary?: { amount: string; from: string; beneficiary: string };
 		verboseOutput?: string;
+		gasUsed?: string;
+		gasPriceGwei?: string;
 		error?: string;
 	}> => {
 		try {
