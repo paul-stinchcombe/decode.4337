@@ -1,6 +1,6 @@
 {
 	"name": "decode-kami-4337",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "Decode KAMI Account Abstraction transactions",
 	"license": "MIT",
 	"author": "Paul Stinchcombe <https://www.paulstinchcombe.com>",
@@ -51,7 +51,12 @@
 			"target": [
 				"dmg",
 				"zip"
-			]
+			],
+			"hardenedRuntime": true,
+			"gatekeeperAssess": false,
+			"entitlements": "build/entitlements.mac.plist",
+			"entitlementsInherit": "build/entitlements.mac.plist",
+			"notarize": true
 		},
 		"win": {
 			"target": [

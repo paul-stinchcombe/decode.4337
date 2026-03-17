@@ -11,6 +11,7 @@ release/
 .env
 .env.local
 .env.*.local
+.env.notarize
 
 # IDE
 .idea/
@@ -33,3 +34,5 @@ pnpm-debug.log*
 # Compressed files
 *.zip
 *.tgz
+
+build-env.sh

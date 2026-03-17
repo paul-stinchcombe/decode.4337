@@ -8,7 +8,7 @@ dotenv.config();
 const program = new Command();
 
 program
-	.version('1.0.0')
+	.version('1.0.1')
 	.description('Decode Base Network Transactions')
 	.option('-v, --verbose', 'Show full decode output')
 	.option('-c, --chain <id>', 'Chain ID (hex or decimal, e.g. 0x2105 or 8453)', '8453')
