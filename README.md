@@ -2,96 +2,135 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A tool for decoding **Account Abstraction (ERC-4337)** transactions. Extracts the human-readable summary from `handleOps` calls on the Entry Point 0.7.0 contract—including SimpleAccount-style transfers—so you can see the formatted amount, token, sender, and beneficiary at a glance.
+Decode 4337 is a CLI + Electron app for decoding Account Abstraction transaction data (ERC-4337 and related direct account calls) into a readable call breakdown.
 
-Available as a **CLI** and **Electron desktop app** for Mac, Windows, and Linux.
+## Scope
 
-## What it does
+The decoder currently covers three main workflows:
 
-- Decodes transactions that bundle UserOperations via `handleOps()` on the Entry Point 0.7.0 contract
-- Extracts nested calls from SimpleAccount `execute()` (e.g. ERC-20 `transferFrom`)
-- Produces a summary with:
-  - **Amount** – formatted with token symbol (e.g. `0.02475 USDC`)
-  - **From** – sender address
-  - **Beneficiary** – bundler address receiving gas fees
+1. **EntryPoint 0.7.0 `handleOps` transactions**
+   - Detects transactions sent to `entryPoint07Address`.
+   - Parses each UserOperation and decodes nested `execute` / `executeBatch` calls.
+2. **Direct smart-account transactions**
+   - Decodes top-level `execute` / `executeBatch` even when not wrapped in `handleOps`.
+3. **Generic direct contract calls**
+   - Decodes `tx.input` directly using a merged ABI loaded from `artifacts/**/*.json`, with fallback ABI support.
+
+Codepaths: `src/decode.ts`, `src/artifacts.ts`.
+
+## Output model
+
+The app returns up to three layers of output:
+
+- **Decoded Calls**: function, target, and decoded arguments for each call.
+- **Summary**: shown when a decoded call is ERC-20 `transfer` or `transferFrom`.
+  - `amount` uses token metadata for known tokens (otherwise raw integer + `(unknown token)`).
+  - `from` is inferred from call args (`transferFrom`) or sender account (`transfer`).
+  - `beneficiary` is the EntryPoint beneficiary for `handleOps` flows.
+- **Verbose output** (`-v` / UI checkbox):
+  - Artifacts directory in use.
+  - ABI source used (`merged` or `fallback`).
+  - Gas used and gas price (when receipt/price data is available).
 
 ## Supported chains
 
-**Mainnets:** Base, Ethereum, Arbitrum, Optimism, Polygon, Soneium  
-**Testnets:** Sepolia, Base Sepolia, Arbitrum Sepolia, Soneium Minato
+Built-in chain IDs:
 
-Custom chain IDs can be passed via the CLI `-c` option.
+- **Mainnets**: Ethereum (1), Base (8453), Arbitrum (42161), Optimism (10), Polygon (137), Soneium (1868)
+- **Testnets**: Sepolia (11155111), Base Sepolia (84532), Arbitrum Sepolia (421614), Soneium Minato (1946)
 
-## Installation
+You can also pass custom chain IDs via CLI (`--chain`), which use a generated RPC URL format.
+
+## Setup
 
 ```bash
 git clone <repo-url>
-cd decode.tx
+cd decode-4337
 pnpm install
 ```
+
+Requirements:
+
+- Node.js 18+
+- pnpm
 
 ## Usage
 
 ### CLI
 
 ```bash
-# Decode a transaction (default: Base)
+# Decode on Base (default chain)
 pnpm start 0x0e65f9293230c35cb4994fce91f44ac6360844376927e36ba2238783ba7521cc
 
-# Options
-pnpm start -v <hash>        # Verbose output (full decode details)
-pnpm start -c 8453 <hash>   # Chain by ID (decimal)
-pnpm start -c 0x2105 <hash> # Chain by ID (hex)
+# Verbose decode
+pnpm start -v <hash>
+
+# Chain override (decimal or hex)
+pnpm start -c 8453 <hash>
+pnpm start -c 0x2105 <hash>
+```
+
+Optional `.env` override for Base RPC:
+
+```bash
+BASE_RPC_URL=https://mainnet.base.org
 ```
 
 ### Desktop app
 
 ```bash
-# First-time: ensure Electron binary is installed (if pnpm blocks scripts)
-node node_modules/electron/install.js
-
-# Build and run
+# Build + run Electron app
 pnpm run app
 ```
 
-Paste a transaction hash, select a chain, optionally enable verbose output, and click Decode.
+In the UI, provide a transaction hash, chain, and optional verbose mode.
 
-## Build native installers
+## ABI/artifact behavior
+
+The decoder merges function ABIs from `artifacts/**/*.json` and falls back to built-in ABI fragments when artifact loading is unavailable.
+
+Fallback coverage includes:
+
+- `execute`, `executeBatch`
+- ERC-20 `transfer`, `transferFrom`, `approve`
+- Common `deploy(bytes)` pattern
+- `mintFor` for KAMI721C
+
+Build copies artifacts into `dist/`:
+
+```bash
+pnpm run build
+```
+
+You can verify merged ABI health after build:
+
+```bash
+node scripts/verify-abi.js
+```
+
+## Packaging
 
 ```bash
 pnpm run build
 pnpm run dist
 ```
 
-Outputs to `release/` (e.g. `Decode 4337-1.0.0-arm64.dmg`):
+Outputs are written to `release/`:
 
-- **Mac:** `.dmg`, `.zip`
-- **Windows:** NSIS installer, portable `.exe`
-- **Linux:** `.AppImage`, `.deb`
+- **Mac**: `.dmg`, `.zip`
+- **Windows**: NSIS installer, portable `.exe`
+- **Linux**: `.AppImage`, `.deb`
 
-## Scripts
+## Mac signing/notarization runbooks
 
-| Script           | Description                    |
-|------------------|--------------------------------|
-| `pnpm start`     | Run CLI (tx hash as argument)  |
-| `pnpm run app`   | Launch Electron desktop app    |
-| `pnpm run build` | Compile TypeScript             |
-| `pnpm run dist`  | Package native installers      |
+- [docs/NOTARIZE-MAC.md](docs/NOTARIZE-MAC.md)
+- [docs/SHARING-DMG.md](docs/SHARING-DMG.md)
 
-## Requirements
+## Troubleshooting quick checks
 
-- Node.js 18+
-- pnpm (or npm/yarn)
-
-## Environment
-
-Optional `.env` for custom RPC:
-
-```
-BASE_RPC_URL=https://mainnet.base.org
-```
-
-Used when decoding Base (chain 8453) transactions.
+- **`Invalid chain ID`**: use a positive decimal or `0x` hex value.
+- **`Could not decode transaction.`**: enable verbose mode to inspect ABI source and unknown selectors.
+- **Unknown token amount formatting**: token metadata is currently hardcoded for known addresses; unknown tokens are shown as raw integers.
 
 ## License
 

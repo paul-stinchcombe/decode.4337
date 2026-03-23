@@ -1,6 +1,6 @@
-# Signing & notarizing the Mac build (v1.0.1+)
+# Signing & notarizing the Mac build
 
-Follow these steps once. After that, `pnpm run dist` will produce a DMG that opens for anyone, even when downloaded from Google Drive.
+Use this runbook to produce a signed, notarized DMG that opens on recipient Macs without quarantine errors.
 
 ## 1. Apple Developer account
 
@@ -51,11 +51,11 @@ pnpm run dist
 
 The first notarization can take a few minutes. The output will be in **`release/`**, e.g.:
 
-- `release/Decode 4337-1.0.1.dmg`
+- `release/Decode 4337-<version>.dmg`
 
 Share that DMG; recipients can open it without any “damaged” or quarantine workaround.
 
-## 6. Optional: use a .env file (don’t commit it)
+## 6. Optional: use a local env file (don’t commit it)
 
 You can put the exports in a file and source it:
 
@@ -75,6 +75,17 @@ set -a && source .env.notarize && set +a
 pnpm run build && pnpm run dist
 ```
 
+### Optional helper script (`dist-mac.sh`)
+
+The repository includes `dist-mac.sh`, which calls:
+
+```bash
+source ./build-env.sh
+pnpm run dist
+```
+
+This is optional. If you use it, create a local `build-env.sh` (ignored by git) that exports `CSC_*` and `APPLE_*` variables. If you do not use it, running `pnpm run build && pnpm run dist` after exporting environment variables is sufficient.
+
 ## Troubleshooting
 
 - **“notarize options were not provided”**  
@@ -85,3 +96,6 @@ pnpm run build && pnpm run dist
 
 - **Notarization timeout / Apple ID errors**  
   Confirm the app-specific password is correct and has no extra spaces. Use the latest Xcode command line tools: `xcode-select --install`.
+
+- **`dist-mac.sh: build-env.sh: No such file`**
+  `build-env.sh` is not committed by default. Either create it locally or run `pnpm run dist` directly in a shell where notarization variables are exported.
