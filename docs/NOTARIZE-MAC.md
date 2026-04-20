@@ -1,6 +1,6 @@
-# Signing & notarizing the Mac build (v1.0.1+)
+# Signing and notarizing the macOS build (v1.0.1+)
 
-Follow these steps once. After that, `pnpm run dist` will produce a DMG that opens for anyone, even when downloaded from Google Drive.
+Follow these steps once. After that, `pnpm run dist` (or `./dist-mac.sh`) will produce a DMG that opens for recipients without quarantine workarounds.
 
 ## 1. Apple Developer account
 
@@ -49,9 +49,15 @@ pnpm run build
 pnpm run dist
 ```
 
-The first notarization can take a few minutes. The output will be in **`release/`**, e.g.:
+Or run the helper script (it sources `build-env.sh` and then runs `pnpm run dist`):
 
-- `release/Decode 4337-1.0.1.dmg`
+```bash
+./dist-mac.sh
+```
+
+The first notarization can take a few minutes. Output goes to **`release/`**, for example:
+
+- `release/Decode 4337-1.0.1-arm64.dmg`
 
 Share that DMG; recipients can open it without any “damaged” or quarantine workaround.
 
