@@ -15,7 +15,7 @@ Available as a **CLI** and **Electron desktop app** for Mac, Windows, and Linux.
 - Produces a transfer summary, when the decoded call is an ERC-20 `transfer` or `transferFrom`, with:
   - **Amount** – formatted with token symbol (e.g. `0.02475 USDC`)
   - **From** – sender address
-  - **Beneficiary** – bundler address receiving gas fees
+  - **Beneficiary** – the Entry Point `handleOps` beneficiary for bundled UserOperations; direct transaction summaries currently show the transaction sender in this field
 
 See [Decoding pipeline and ABI artifacts](docs/DECODING-PIPELINE.md) for architecture, extension steps, and troubleshooting.
 
@@ -29,8 +29,8 @@ Custom chain IDs can be passed via the CLI `-c` option.
 ## Installation
 
 ```bash
-git clone https://github.com/paul-stinchcombe/decode-4337.git
-cd decode-4337
+git clone https://github.com/paul-stinchcombe/decode.4337.git
+cd decode.4337
 pnpm install
 ```
 

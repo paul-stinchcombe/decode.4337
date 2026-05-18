@@ -87,8 +87,8 @@ the batch.
 ### 4. Generic direct calls
 
 If the transaction is not `execute` or `executeBatch`, the decoder attempts to
-decode `tx.input` directly against `tx.to` using the merged ABI and then the
-fallback ABI.
+decode `tx.input` using the merged ABI and then the fallback ABI. It returns
+`tx.to` as the decoded call target.
 
 This is how direct KAMI contract transactions are decoded.
 
