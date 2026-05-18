@@ -2,18 +2,22 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A tool for decoding **Account Abstraction (ERC-4337)** transactions. Extracts the human-readable summary from `handleOps` calls on the Entry Point 0.7.0 contract—including SimpleAccount-style transfers—so you can see the formatted amount, token, sender, and beneficiary at a glance.
+A tool for decoding **Account Abstraction (ERC-4337)** and KAMI smart-account transactions. It decodes Entry Point 0.7.0 `handleOps` bundles, SimpleAccount-style direct `execute` / `executeBatch` calls, and direct contract calls covered by the bundled artifacts.
 
 Available as a **CLI** and **Electron desktop app** for Mac, Windows, and Linux.
 
 ## What it does
 
 - Decodes transactions that bundle UserOperations via `handleOps()` on the Entry Point 0.7.0 contract
-- Extracts nested calls from SimpleAccount `execute()` (e.g. ERC-20 `transferFrom`)
-- Produces a summary with:
+- Extracts nested calls from SimpleAccount `execute()` and `executeBatch()`
+- Decodes direct transactions with the merged ABI built from `artifacts/**/*.json`
+- Labels known `deploy(bytes initCode)` calls when the init code matches bundled contract bytecode
+- Produces a transfer summary, when the decoded call is an ERC-20 `transfer` or `transferFrom`, with:
   - **Amount** – formatted with token symbol (e.g. `0.02475 USDC`)
   - **From** – sender address
   - **Beneficiary** – bundler address receiving gas fees
+
+See [Decoding pipeline and ABI artifacts](docs/DECODING-PIPELINE.md) for architecture, extension steps, and troubleshooting.
 
 ## Supported chains
 
@@ -25,8 +29,8 @@ Custom chain IDs can be passed via the CLI `-c` option.
 ## Installation
 
 ```bash
-git clone <repo-url>
-cd decode.tx
+git clone https://github.com/paul-stinchcombe/decode-4337.git
+cd decode-4337
 pnpm install
 ```
 
@@ -43,6 +47,8 @@ pnpm start -v <hash>        # Verbose output (full decode details)
 pnpm start -c 8453 <hash>   # Chain by ID (decimal)
 pnpm start -c 0x2105 <hash> # Chain by ID (hex)
 ```
+
+Verbose output includes the artifacts directory, whether the merged ABI or fallback ABI decoded the call, and gas information when the receipt is available.
 
 ### Desktop app
 
@@ -63,7 +69,7 @@ pnpm run build
 pnpm run dist
 ```
 
-Outputs to `release/` (e.g. `Decode 4337-1.0.0-arm64.dmg`):
+Outputs to `release/` (e.g. `Decode 4337-1.0.1-arm64.dmg`):
 
 - **Mac:** `.dmg`, `.zip`
 - **Windows:** NSIS installer, portable `.exe`
@@ -71,12 +77,13 @@ Outputs to `release/` (e.g. `Decode 4337-1.0.0-arm64.dmg`):
 
 ## Scripts
 
-| Script           | Description                    |
-|------------------|--------------------------------|
-| `pnpm start`     | Run CLI (tx hash as argument)  |
-| `pnpm run app`   | Launch Electron desktop app    |
-| `pnpm run build` | Compile TypeScript             |
-| `pnpm run dist`  | Package native installers      |
+| Script                | Description                                          |
+|-----------------------|------------------------------------------------------|
+| `pnpm start`          | Run CLI (tx hash as argument)                        |
+| `pnpm run app`        | Launch Electron desktop app                          |
+| `pnpm run build`      | Compile TypeScript and copy UI/artifacts to `dist/`  |
+| `pnpm run verify-abi` | Verify `dist/` can load the expected merged ABI       |
+| `pnpm run dist`       | Package native installers                            |
 
 ## Requirements
 
@@ -91,7 +98,7 @@ Optional `.env` for custom RPC:
 BASE_RPC_URL=https://mainnet.base.org
 ```
 
-Used when decoding Base (chain 8453) transactions.
+Used by the CLI when decoding Base (chain 8453) transactions. The desktop app uses the default Base RPC unless a custom RPC is wired into the Electron decode handler.
 
 ## License
 
