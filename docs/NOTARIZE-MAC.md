@@ -51,11 +51,34 @@ pnpm run dist
 
 The first notarization can take a few minutes. The output will be in **`release/`**, e.g.:
 
-- `release/Decode 4337-1.0.1.dmg`
+- `release/Decode 4337-1.0.1*.dmg`
 
 Share that DMG; recipients can open it without any “damaged” or quarantine workaround.
 
-## 6. Optional: use a .env file (don’t commit it)
+## 6. Optional: use the Mac build helper
+
+The repository includes `dist-mac.sh`, which sources a local `build-env.sh` file and then runs `pnpm run dist`.
+
+Create `build-env.sh` in the project root (it is gitignored) with the same values from step 5:
+
+```bash
+export CSC_LINK="/path/to/decode4337-cert.p12"
+export CSC_KEY_PASSWORD="your-p12-password"
+export APPLE_ID="your@apple.id"
+export APPLE_APP_SPECIFIC_PASSWORD="xxxx-xxxx-xxxx-xxxx"
+export APPLE_TEAM_ID="ABCD1234"
+```
+
+Then run:
+
+```bash
+pnpm run build
+./dist-mac.sh
+```
+
+Use this helper only on a local machine or secure build runner that has access to the signing certificate and Apple credentials.
+
+## 7. Optional: use a .env file (don’t commit it)
 
 You can put the exports in a file and source it:
 
