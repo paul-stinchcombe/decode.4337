@@ -19,11 +19,11 @@ Decoded calls are returned as function name, target address, and decoded argumen
 The CLI and desktop app can show:
 
 - **Decoded Calls** - every decoded inner or direct call, including KAMI functions such as `mintFor`, `setPrice`, `setTokenURI`, and `deploy`.
-- **Summary** - shown when the decoder finds an ERC-20 `transfer` or `transferFrom`:
+- **Summary** - shown when the decoder finds an ERC-20 `transfer` or `transferFrom` inside an Entry Point UserOperation or unwrapped SimpleAccount `execute` / `executeBatch` call:
   - **Amount** - formatted with a known token symbol when available, e.g. `0.02475 USDC`.
   - **From** - the transfer sender. For direct calls this is the transaction sender; for 4337 calls this is the smart account or `transferFrom` sender.
   - **Beneficiary** - the Entry Point beneficiary for 4337 transactions, or the transaction sender for direct calls.
-- **Gas metrics** - gas used and gas price when the transaction receipt or transaction data exposes them.
+- **Gas metrics** - gas used and gas price when the transaction receipt or transaction data exposes them. The desktop app shows these when available; the CLI includes them in verbose output.
 - **Verbose metadata** - artifact directory, ABI source (`merged` or `fallback only`), Entry Point/UserOp details, direct-call details, and decode errors for unknown selectors.
 
 The transfer summary is intentionally narrow: in batches, the first decoded ERC-20 transfer-like call is used; other call types are listed under Decoded Calls but do not produce a Summary.
@@ -96,7 +96,7 @@ pnpm run build
 pnpm run dist
 ```
 
-Outputs to `release/` (e.g. `Decode 4337-1.0.1-arm64.dmg`):
+Outputs to `release/` (e.g. `Decode 4337-1.0.1*.dmg`):
 
 - **Mac:** `.dmg`, `.zip`
 - **Windows:** NSIS installer, portable `.exe`

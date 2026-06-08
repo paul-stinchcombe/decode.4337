@@ -4,11 +4,11 @@ If someone gets **"File is damaged"** or **"cannot be opened"** after downloadin
 
 ## Fix for the person who received the DMG
 
-After downloading, open **Terminal** and run **one** of these (adjust the path if they saved it somewhere else):
+After downloading, open **Terminal** and run **one** of these (adjust the path and filename if they saved it somewhere else):
 
 **If they haven’t opened the DMG yet:**
 ```bash
-xattr -cr ~/Downloads/Decode\ 4337-1.0.1.dmg
+xattr -cr ~/Downloads/Decode\ 4337-1.0.1-arm64.dmg
 ```
 Then double-click the DMG and install as usual.
 

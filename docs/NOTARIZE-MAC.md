@@ -51,7 +51,7 @@ pnpm run dist
 
 The first notarization can take a few minutes. The output will be in **`release/`**, e.g.:
 
-- `release/Decode 4337-1.0.1.dmg`
+- `release/Decode 4337-1.0.1*.dmg`
 
 Share that DMG; recipients can open it without any “damaged” or quarantine workaround.
 
