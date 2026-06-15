@@ -8,7 +8,7 @@ After downloading, open **Terminal** and run **one** of these (adjust the path i
 
 **If they haven’t opened the DMG yet:**
 ```bash
-xattr -cr ~/Downloads/Decode\ 4337-1.0.0.dmg
+xattr -cr ~/Downloads/Decode\ 4337-1.0.1-arm64.dmg
 ```
 Then double-click the DMG and install as usual.
 
@@ -29,3 +29,5 @@ For **v1.0.1+** the project is set up for code signing and notarization. Follow 
 - **[NOTARIZE-MAC.md](./NOTARIZE-MAC.md)** – Apple Developer certificate, Team ID, app-specific password, env vars, and `pnpm run dist`.
 
 After you build with signing and notarization, the DMG in `release/` can be shared (e.g. via Google Drive) and will open for recipients without any Terminal workaround.
+
+DMG filenames can include the architecture suffix produced by electron-builder, such as `Decode 4337-1.0.1-arm64.dmg`.
