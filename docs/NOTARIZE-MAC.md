@@ -1,4 +1,4 @@
-# Signing & notarizing the Mac build (v1.0.1+)
+# Signing and notarizing the Mac build (v1.0.1+)
 
 Follow these steps once. After that, `pnpm run dist` will produce a DMG that opens for anyone, even when downloaded from Google Drive.
 
@@ -27,9 +27,9 @@ You need a **paid** Apple Developer account: https://developer.apple.com/program
 - **Team ID:** [Apple Developer → Membership](https://developer.apple.com/account#MembershipDetailsCard) → **Team ID** (e.g. `ABCD1234`).
 - **App-specific password:** [appleid.apple.com](https://appleid.apple.com) → **Sign-In and Security** → **App-Specific Passwords** → generate one for “Decode 4337” or “electron notarize”. You’ll use it as `APPLE_APP_SPECIFIC_PASSWORD`.
 
-## 5. Set environment variables and build
+## 5. Set environment variables
 
-Set these **before** running the build (replace with your values):
+Set these **before** packaging the app (replace with your values):
 
 ```bash
 # Signing (path to the .p12 you exported)
@@ -42,20 +42,53 @@ export APPLE_APP_SPECIFIC_PASSWORD="xxxx-xxxx-xxxx-xxxx"
 export APPLE_TEAM_ID="ABCD1234"
 ```
 
-Then build and create the signed, notarized DMG:
+## 6. Build and package
+
+Build the TypeScript app and copy bundled artifacts:
 
 ```bash
 pnpm run build
+```
+
+Then package the signed, notarized DMG:
+
+```bash
 pnpm run dist
 ```
 
 The first notarization can take a few minutes. The output will be in **`release/`**, e.g.:
 
+- `release/Decode 4337-1.0.1-arm64.dmg`
 - `release/Decode 4337-1.0.1.dmg`
 
 Share that DMG; recipients can open it without any “damaged” or quarantine workaround.
 
-## 6. Optional: use a .env file (don’t commit it)
+## 7. Optional: use `dist-mac.sh`
+
+The repository includes `dist-mac.sh`, which sources a local `build-env.sh` file and then runs `pnpm run dist`.
+
+Create `build-env.sh` in the repository root:
+
+```bash
+export CSC_LINK="$PWD/decode4337-cert.p12"
+export CSC_KEY_PASSWORD="your-p12-password"
+export APPLE_ID="your@apple.id"
+export APPLE_APP_SPECIFIC_PASSWORD="xxxx-xxxx-xxxx-xxxx"
+export APPLE_TEAM_ID="ABCD1234"
+```
+
+`build-env.sh` is gitignored. Keep it and the `.p12` file private.
+
+Then run:
+
+```bash
+pnpm run build
+./dist-mac.sh
+```
+
+`dist-mac.sh` packages the current `dist/` contents. Re-run `pnpm run build` first whenever source, HTML, or artifacts have changed.
+
+## 8. Optional: use a `.env.notarize` file
 
 You can put the exports in a file and source it:
 
