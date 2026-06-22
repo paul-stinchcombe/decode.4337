@@ -2,18 +2,32 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A tool for decoding **Account Abstraction (ERC-4337)** transactions. Extracts the human-readable summary from `handleOps` calls on the Entry Point 0.7.0 contract—including SimpleAccount-style transfers—so you can see the formatted amount, token, sender, and beneficiary at a glance.
+A tool for decoding **Account Abstraction (ERC-4337)** and KAMI smart-account transactions. It extracts human-readable calls from Entry Point 0.7.0 `handleOps` transactions, direct SimpleAccount-style calls, and known KAMI contract calls so you can see the decoded function, target, arguments, gas metadata, and any token transfer summary at a glance.
 
 Available as a **CLI** and **Electron desktop app** for Mac, Windows, and Linux.
 
 ## What it does
 
-- Decodes transactions that bundle UserOperations via `handleOps()` on the Entry Point 0.7.0 contract
-- Extracts nested calls from SimpleAccount `execute()` (e.g. ERC-20 `transferFrom`)
+- Decodes transactions that bundle UserOperations via `handleOps()` on the Entry Point 0.7.0 contract.
+- Extracts nested calls from SimpleAccount `execute()` and `executeBatch()` calldata.
+- Decodes direct contract calls with the merged KAMI ABI when the transaction is not an Entry Point call.
+- Labels recognized KAMI deploy calldata as `deploy (ContractName)` when artifact bytecode matches the `initCode`.
+- Shows a decoded call list with function name, target address, and formatted arguments.
 - Produces a summary with:
-  - **Amount** – formatted with token symbol (e.g. `0.02475 USDC`)
-  - **From** – sender address
-  - **Beneficiary** – bundler address receiving gas fees
+  - **Amount** - formatted with token symbol for known Base tokens, or raw units for unknown tokens.
+  - **From** - sender address.
+  - **Beneficiary** - the Entry Point beneficiary for `handleOps`, or the transaction sender for direct smart-account calls.
+- Includes gas used and gas price when a receipt is available.
+
+## How decoding works
+
+`src/decode.ts` fetches the transaction and receipt with `viem`, then chooses one of three decode paths:
+
+1. **Entry Point 0.7 `handleOps`** - unwraps each UserOperation, decodes SimpleAccount `execute` / `executeBatch`, then decodes each inner call.
+2. **Direct SimpleAccount call** - decodes transaction input as `execute` / `executeBatch`, then decodes inner calls.
+3. **Generic direct call** - decodes transaction input against the merged ABI.
+
+`src/artifacts.ts` builds the merged ABI from `artifacts/**/*.json`, skipping `*.dbg.json`, and falls back to a small built-in ABI for SimpleAccount `execute`, ERC-20 `transfer` / `transferFrom` / `approve`, `deploy(bytes)`, and KAMI `mintFor`. The verbose output includes the artifacts directory and whether the merged or fallback ABI decoded the call.
 
 ## Supported chains
 
@@ -26,7 +40,7 @@ Custom chain IDs can be passed via the CLI `-c` option.
 
 ```bash
 git clone <repo-url>
-cd decode.tx
+cd decode-4337
 pnpm install
 ```
 
@@ -63,7 +77,7 @@ pnpm run build
 pnpm run dist
 ```
 
-Outputs to `release/` (e.g. `Decode 4337-1.0.0-arm64.dmg`):
+Outputs to `release/` (e.g. `Decode 4337-1.0.1-arm64.dmg`):
 
 - **Mac:** `.dmg`, `.zip`
 - **Windows:** NSIS installer, portable `.exe`
@@ -75,7 +89,9 @@ Outputs to `release/` (e.g. `Decode 4337-1.0.0-arm64.dmg`):
 |------------------|--------------------------------|
 | `pnpm start`     | Run CLI (tx hash as argument)  |
 | `pnpm run app`   | Launch Electron desktop app    |
-| `pnpm run build` | Compile TypeScript             |
+| `pnpm run build` | Compile TypeScript and copy `index.html` / `artifacts/**/*.json` to `dist/` |
+| `pnpm run verify-abi` | Verify the built merged ABI has expected KAMI coverage |
+| `pnpm run pack`  | Build unpacked Electron app for inspection |
 | `pnpm run dist`  | Package native installers      |
 
 ## Requirements
@@ -85,13 +101,42 @@ Outputs to `release/` (e.g. `Decode 4337-1.0.0-arm64.dmg`):
 
 ## Environment
 
-Optional `.env` for custom RPC:
+Optional `.env` for the CLI Base RPC override:
 
 ```
 BASE_RPC_URL=https://mainnet.base.org
 ```
 
-Used when decoding Base (chain 8453) transactions.
+`BASE_RPC_URL` is used only by the CLI when decoding Base (chain 8453). The Electron app uses the default RPC selection in `src/decode.ts`: Base defaults to `https://mainnet.base.org`, built-in chains use viem chain defaults, and unknown custom chain IDs use `https://{chainId}.rpc.thirdweb.com`.
+
+Known token formatting is intentionally small: Base USDC and WETH are displayed with symbols and decimals. Other token transfers decode, but the amount is shown in raw units with `unknown token`.
+
+## Developer workflows
+
+### Verify ABI coverage after artifact changes
+
+Run this after updating contract artifacts or decoder artifact-loading logic:
+
+```bash
+pnpm run build
+pnpm run verify-abi
+```
+
+The verifier loads `dist/artifacts.js`, checks that the merged ABI has at least 100 functions, and confirms required functions including `setPrice`, `mintFor`, `setTokenURI`, `deploy`, and `execute`.
+
+See [docs/ARTIFACTS.md](docs/ARTIFACTS.md) for the artifact update runbook.
+
+### Mac signing and sharing
+
+- [docs/NOTARIZE-MAC.md](docs/NOTARIZE-MAC.md) explains the signed and notarized Mac build.
+- [docs/SHARING-DMG.md](docs/SHARING-DMG.md) explains the quarantine workaround for unsigned or unnotarized DMGs.
+
+## Troubleshooting
+
+- **`Could not decode transaction.`** The transaction may call a function that is not present in the merged artifacts or fallback ABI. Update artifacts if the contract should be supported, then run `pnpm run build && pnpm run verify-abi`.
+- **`This is a simple ETH transfer with no data.`** The transaction has no calldata to decode.
+- **Verbose output says `ABI: fallback only`.** The artifacts directory was missing or did not provide a matching selector. Check that `pnpm run build` copied `artifacts/**/*.json` into `dist/artifacts/`.
+- **Custom chain fails to fetch.** Pass a supported chain ID with `-c`; unknown chain IDs rely on the thirdweb RPC URL pattern and may require network support outside this app.
 
 ## License
 

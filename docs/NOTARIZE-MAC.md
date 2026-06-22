@@ -42,7 +42,7 @@ export APPLE_APP_SPECIFIC_PASSWORD="xxxx-xxxx-xxxx-xxxx"
 export APPLE_TEAM_ID="ABCD1234"
 ```
 
-Then build and create the signed, notarized DMG:
+Then build the current TypeScript output and create the signed, notarized DMG:
 
 ```bash
 pnpm run build
@@ -52,10 +52,11 @@ pnpm run dist
 The first notarization can take a few minutes. The output will be in **`release/`**, e.g.:
 
 - `release/Decode 4337-1.0.1.dmg`
+- `release/Decode 4337-1.0.1-arm64.dmg`
 
 Share that DMG; recipients can open it without any “damaged” or quarantine workaround.
 
-## 6. Optional: use a .env file (don’t commit it)
+## 6. Optional: use a local env file or helper script (don’t commit it)
 
 You can put the exports in a file and source it:
 
@@ -73,6 +74,24 @@ Then:
 ```bash
 set -a && source .env.notarize && set +a
 pnpm run build && pnpm run dist
+```
+
+The repository also includes `dist-mac.sh`, which sources a local `build-env.sh` and then runs `pnpm run dist`. `build-env.sh` is gitignored, so create it locally:
+
+```bash
+# build-env.sh
+export CSC_LINK="/path/to/decode4337-cert.p12"
+export CSC_KEY_PASSWORD="your-p12-password"
+export APPLE_ID="your@apple.id"
+export APPLE_APP_SPECIFIC_PASSWORD="xxxx-xxxx-xxxx-xxxx"
+export APPLE_TEAM_ID="ABCD1234"
+```
+
+Use the helper after building:
+
+```bash
+pnpm run build
+./dist-mac.sh
 ```
 
 ## Troubleshooting
