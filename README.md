@@ -9,7 +9,9 @@ Available as a **CLI** and **Electron desktop app** for Mac, Windows, and Linux.
 ## What it does
 
 - Decodes transactions that bundle UserOperations via `handleOps()` on the Entry Point 0.7.0 contract
-- Extracts nested calls from SimpleAccount `execute()` (e.g. ERC-20 `transferFrom`)
+- Extracts nested calls from SimpleAccount `execute()` and `executeBatch()` (e.g. ERC-20 `transferFrom`)
+- Decodes direct SimpleAccount calls and generic direct contract calls when the checked-in KAMI artifacts contain matching ABI entries
+- Shows gas usage and ABI/artifact metadata when verbose output is enabled
 - Produces a summary with:
   - **Amount** – formatted with token symbol (e.g. `0.02475 USDC`)
   - **From** – sender address
@@ -26,7 +28,7 @@ Custom chain IDs can be passed via the CLI `-c` option.
 
 ```bash
 git clone <repo-url>
-cd decode.tx
+cd decode-4337
 pnpm install
 ```
 
@@ -63,7 +65,7 @@ pnpm run build
 pnpm run dist
 ```
 
-Outputs to `release/` (e.g. `Decode 4337-1.0.0-arm64.dmg`):
+Outputs to `release/` (e.g. `Decode 4337-1.0.1-arm64.dmg`):
 
 - **Mac:** `.dmg`, `.zip`
 - **Windows:** NSIS installer, portable `.exe`
@@ -71,12 +73,19 @@ Outputs to `release/` (e.g. `Decode 4337-1.0.0-arm64.dmg`):
 
 ## Scripts
 
-| Script           | Description                    |
-|------------------|--------------------------------|
-| `pnpm start`     | Run CLI (tx hash as argument)  |
-| `pnpm run app`   | Launch Electron desktop app    |
-| `pnpm run build` | Compile TypeScript             |
-| `pnpm run dist`  | Package native installers      |
+| Script                | Description                                                |
+|-----------------------|------------------------------------------------------------|
+| `pnpm start`          | Run CLI (tx hash as argument)                              |
+| `pnpm run app`        | Launch Electron desktop app                                |
+| `pnpm run build`      | Compile TypeScript and copy HTML/artifacts into `dist/`    |
+| `pnpm run verify-abi` | Verify merged artifact ABI coverage after a build          |
+| `pnpm run dist`       | Package native installers                                  |
+
+## Developer docs
+
+- [Artifact and ABI maintenance](./docs/ARTIFACTS.md) - how checked-in KAMI artifacts are loaded, how fallback decoding works, and how to verify ABI coverage.
+- [Signing and notarizing the Mac build](./docs/NOTARIZE-MAC.md) - Apple Developer certificate, notarization environment, and packaging steps.
+- [Sharing the Decode 4337 DMG](./docs/SHARING-DMG.md) - workaround and proper fix for macOS quarantine issues when sharing unsigned builds.
 
 ## Requirements
 

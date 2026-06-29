@@ -49,18 +49,30 @@ pnpm run build
 pnpm run dist
 ```
 
+Or use the checked-in helper after creating a local `build-env.sh` with the
+same exports:
+
+```bash
+pnpm run build
+./dist-mac.sh
+```
+
+`dist-mac.sh` sources `./build-env.sh` and runs `pnpm run dist`; it does not
+refresh `dist/` itself, so keep the explicit build step before packaging.
+
 The first notarization can take a few minutes. The output will be in **`release/`**, e.g.:
 
+- `release/Decode 4337-1.0.1-arm64.dmg`
 - `release/Decode 4337-1.0.1.dmg`
 
 Share that DMG; recipients can open it without any “damaged” or quarantine workaround.
 
-## 6. Optional: use a .env file (don’t commit it)
+## 6. Optional: use a local env file (don’t commit it)
 
 You can put the exports in a file and source it:
 
 ```bash
-# .env.notarize (add to .gitignore)
+# build-env.sh (already ignored by .gitignore)
 CSC_LINK=/path/to/decode4337-cert.p12
 CSC_KEY_PASSWORD=your-p12-password
 APPLE_ID=your@apple.id
@@ -71,7 +83,7 @@ APPLE_TEAM_ID=ABCD1234
 Then:
 
 ```bash
-set -a && source .env.notarize && set +a
+set -a && source build-env.sh && set +a
 pnpm run build && pnpm run dist
 ```
 

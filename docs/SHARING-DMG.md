@@ -8,9 +8,10 @@ After downloading, open **Terminal** and run **one** of these (adjust the path i
 
 **If they haven’t opened the DMG yet:**
 ```bash
-xattr -cr ~/Downloads/Decode\ 4337-1.0.0.dmg
+xattr -cr ~/Downloads/Decode\ 4337-1.0.1-arm64.dmg
 ```
-Then double-click the DMG and install as usual.
+Then double-click the DMG and install as usual. Adjust the filename if the
+version or architecture suffix is different.
 
 **If they already installed the app to Applications:**
 ```bash
