@@ -1,6 +1,8 @@
 # Signing & notarizing the Mac build (v1.0.1+)
 
-Follow these steps once. After that, `pnpm run dist` will produce a DMG that opens for anyone, even when downloaded from Google Drive.
+Follow these steps once. After that, `pnpm run dist` (or the `dist-mac.sh`
+helper) will produce a DMG that opens for anyone, even when downloaded from
+Google Drive.
 
 ## 1. Apple Developer account
 
@@ -52,10 +54,38 @@ pnpm run dist
 The first notarization can take a few minutes. The output will be in **`release/`**, e.g.:
 
 - `release/Decode 4337-1.0.1.dmg`
+- `release/Decode 4337-1.0.1-arm64.dmg`
 
 Share that DMG; recipients can open it without any “damaged” or quarantine workaround.
 
-## 6. Optional: use a .env file (don’t commit it)
+## 6. Optional: use the checked-in Mac helper
+
+`dist-mac.sh` sources a local `build-env.sh` file and then runs
+`pnpm run dist`. The real `build-env.sh` is intentionally gitignored because it
+contains signing secrets.
+
+Create it locally from this template:
+
+```bash
+export CSC_LINK="/path/to/decode4337-cert.p12"
+export CSC_KEY_PASSWORD="your-p12-password"
+export APPLE_ID="your@apple.id"
+export APPLE_APP_SPECIFIC_PASSWORD="xxxx-xxxx-xxxx-xxxx"
+export APPLE_TEAM_ID="ABCD1234"
+```
+
+Then compile the current app files and package:
+
+```bash
+pnpm run build
+chmod +x dist-mac.sh
+./dist-mac.sh
+```
+
+`dist-mac.sh` does not run `pnpm run build` for you; run it first so the DMG
+contains the latest `dist/` output.
+
+## 7. Optional: use a .env file (don’t commit it)
 
 You can put the exports in a file and source it:
 
