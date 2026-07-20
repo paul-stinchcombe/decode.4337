@@ -55,7 +55,51 @@ The first notarization can take a few minutes. The output will be in **`release/
 
 Share that DMG; recipients can open it without any “damaged” or quarantine workaround.
 
-## 6. Optional: use a .env file (don’t commit it)
+## 6. Verify the release before sharing
+
+Do not treat a successful `electron-builder` exit as the only release check.
+Validate the DMG's notarization ticket, then mount it and assess the app that
+recipients will run. Replace the filename if you built a different
+architecture:
+
+```bash
+DMG="release/Decode 4337-1.0.1.dmg"
+MOUNT_POINT="$(mktemp -d)"
+
+xcrun stapler validate "$DMG"
+spctl --assess --type open --context context:primary-signature --verbose=4 "$DMG"
+
+hdiutil attach "$DMG" -mountpoint "$MOUNT_POINT" -nobrowse
+APP="$MOUNT_POINT/Decode 4337.app"
+codesign --verify --deep --strict --verbose=2 "$APP"
+spctl --assess --type execute --verbose=4 "$APP"
+hdiutil detach "$MOUNT_POINT"
+rmdir "$MOUNT_POINT"
+```
+
+Expected results:
+
+- `stapler validate` reports that the ticket is valid.
+- Both `spctl` checks report `accepted`.
+- `codesign --verify` reports no signature errors.
+
+Finally, install and launch the app on a Mac that does not have the signing
+certificate. These commands validate distribution metadata; they do not
+exercise the decoder or Electron startup.
+
+## 7. Keep the hardened-runtime settings intact
+
+The `package.json` Mac build applies `build/entitlements.mac.plist` to the app
+and inherited processes while enabling the hardened runtime. The checked-in
+entitlements grant JIT, unsigned executable-memory, and disabled
+library-validation capabilities. These permissions are part of the current
+signing configuration.
+
+Treat changes to these files as release-signing changes, not cleanup. After any
+change, rebuild the DMG and repeat the verification above; a locally launched
+unsigned development build does not validate the packaged signature.
+
+## 8. Optional: use a .env file (don’t commit it)
 
 You can put the exports in a file and source it:
 
