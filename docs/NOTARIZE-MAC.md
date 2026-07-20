@@ -45,9 +45,14 @@ export APPLE_TEAM_ID="ABCD1234"
 Then build and create the signed, notarized DMG:
 
 ```bash
+rm -rf dist release
 pnpm run build
 pnpm run dist
 ```
+
+The clean step prevents deleted or renamed compiled files from surviving in
+`dist/`, which `electron-builder` packages as-is. `pnpm run dist` does not run
+the build or clean steps for you.
 
 The first notarization can take a few minutes. The output will be in **`release/`**, e.g.:
 
@@ -58,34 +63,59 @@ Share that DMG; recipients can open it without any “damaged” or quarantine w
 ## 6. Verify the release before sharing
 
 Do not treat a successful `electron-builder` exit as the only release check.
-Validate the DMG's notarization ticket, then mount it and assess the app that
-recipients will run. Replace the filename if you built a different
-architecture:
+Assess the DMG with Gatekeeper, then mount it and validate the notarization
+ticket, signature, entitlements, and architecture of the app recipients will
+run. Replace the filename if you built a different architecture:
 
 ```bash
+(
+set -euo pipefail
+
 DMG="release/Decode 4337-1.0.1.dmg"
 MOUNT_POINT="$(mktemp -d)"
+ATTACHED=false
 
-xcrun stapler validate "$DMG"
+cleanup() {
+  status=$?
+  if [ "$ATTACHED" = true ]; then
+    hdiutil detach "$MOUNT_POINT" || status=$?
+  fi
+  rmdir "$MOUNT_POINT" || status=$?
+  exit "$status"
+}
+trap cleanup EXIT
+
 spctl --assess --type open --context context:primary-signature --verbose=4 "$DMG"
-
 hdiutil attach "$DMG" -mountpoint "$MOUNT_POINT" -nobrowse
+ATTACHED=true
+
 APP="$MOUNT_POINT/Decode 4337.app"
+xcrun stapler validate "$APP"
 codesign --verify --deep --strict --verbose=2 "$APP"
 spctl --assess --type execute --verbose=4 "$APP"
-hdiutil detach "$MOUNT_POINT"
-rmdir "$MOUNT_POINT"
+codesign --display --verbose=4 "$APP"
+codesign --display --entitlements :- "$APP"
+lipo -archs "$APP/Contents/MacOS/Decode 4337"
+shasum -a 256 "$DMG"
+)
 ```
 
 Expected results:
 
-- `stapler validate` reports that the ticket is valid.
+- `stapler validate` reports that the mounted app's ticket is valid.
 - Both `spctl` checks report `accepted`.
 - `codesign --verify` reports no signature errors.
+- The signing details include the `runtime` flag, and the entitlement output
+  contains the three keys from `build/entitlements.mac.plist`.
+- `lipo` lists the architecture intended for the recipients (`arm64`,
+  `x86_64`, or both for a universal build).
 
-Finally, install and launch the app on a Mac that does not have the signing
-certificate. These commands validate distribution metadata; they do not
-exercise the decoder or Electron startup.
+Record the local DMG checksum printed by the block. After uploading and
+downloading through the intended sharing channel, run `shasum -a 256` on the
+download and compare it, then install that copy on a Mac without the signing
+certificate. Launch it and decode a known-good transaction, confirming the
+expected call or transfer summary. The command checks validate distribution
+metadata; this smoke test validates the packaged Electron and decoder path.
 
 ## 7. Keep the hardened-runtime settings intact
 
@@ -115,6 +145,7 @@ APPLE_TEAM_ID=ABCD1234
 Then:
 
 ```bash
+rm -rf dist release
 set -a && source .env.notarize && set +a
 pnpm run build && pnpm run dist
 ```
