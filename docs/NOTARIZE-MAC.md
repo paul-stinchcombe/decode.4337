@@ -45,9 +45,12 @@ export APPLE_TEAM_ID="ABCD1234"
 Then build and create the signed, notarized DMG:
 
 ```bash
+(
+set -euo pipefail
 rm -rf dist release
 pnpm run build
 pnpm run dist
+)
 ```
 
 The clean step prevents deleted or renamed compiled files from surviving in
@@ -72,7 +75,11 @@ run. Replace the filename if you built a different architecture:
 set -euo pipefail
 
 DMG="release/Decode 4337-1.0.1.dmg"
-MOUNT_POINT="$(mktemp -d)"
+EXPECTED_ARCHS="arm64" # Use "x86_64" or "arm64 x86_64" when appropriate.
+WORK_DIR="$(mktemp -d)"
+MOUNT_POINT="$WORK_DIR/mount"
+ENTITLEMENTS_FILE="$WORK_DIR/entitlements.plist"
+mkdir "$MOUNT_POINT"
 ATTACHED=false
 
 cleanup() {
@@ -80,7 +87,7 @@ cleanup() {
   if [ "$ATTACHED" = true ]; then
     hdiutil detach "$MOUNT_POINT" || status=$?
   fi
-  rmdir "$MOUNT_POINT" || status=$?
+  rm -rf "$WORK_DIR" || status=$?
   exit "$status"
 }
 trap cleanup EXIT
@@ -93,9 +100,37 @@ APP="$MOUNT_POINT/Decode 4337.app"
 xcrun stapler validate "$APP"
 codesign --verify --deep --strict --verbose=2 "$APP"
 spctl --assess --type execute --verbose=4 "$APP"
-codesign --display --verbose=4 "$APP"
-codesign --display --entitlements :- "$APP"
-lipo -archs "$APP/Contents/MacOS/Decode 4337"
+
+SIGNING_DETAILS="$(codesign --display --verbose=4 "$APP" 2>&1)"
+printf '%s\n' "$SIGNING_DETAILS"
+case "$SIGNING_DETAILS" in
+  *"flags="*"(runtime)"*) ;;
+  *) echo "Missing hardened-runtime flag" >&2; exit 1 ;;
+esac
+
+codesign --display --entitlements :- "$APP" > "$ENTITLEMENTS_FILE"
+plutil -p "$ENTITLEMENTS_FILE"
+for key in \
+  com.apple.security.cs.allow-jit \
+  com.apple.security.cs.allow-unsigned-executable-memory \
+  com.apple.security.cs.disable-library-validation
+do
+  value="$(/usr/libexec/PlistBuddy -c "Print :$key" "$ENTITLEMENTS_FILE")"
+  [ "$value" = "true" ] || {
+    echo "Missing required entitlement: $key" >&2
+    exit 1
+  }
+done
+
+ARCHS="$(lipo -archs "$APP/Contents/MacOS/Decode 4337")"
+printf 'Architectures: %s\n' "$ARCHS"
+for expected in $EXPECTED_ARCHS; do
+  case " $ARCHS " in
+    *" $expected "*) ;;
+    *) echo "Missing expected architecture: $expected" >&2; exit 1 ;;
+  esac
+done
+
 shasum -a 256 "$DMG"
 )
 ```
@@ -105,17 +140,23 @@ Expected results:
 - `stapler validate` reports that the mounted app's ticket is valid.
 - Both `spctl` checks report `accepted`.
 - `codesign --verify` reports no signature errors.
-- The signing details include the `runtime` flag, and the entitlement output
-  contains the three keys from `build/entitlements.mac.plist`.
-- `lipo` lists the architecture intended for the recipients (`arm64`,
-  `x86_64`, or both for a universal build).
+- The block exits nonzero if the signing details omit the `runtime` flag, any
+  entitlement from `build/entitlements.mac.plist`, or an architecture listed
+  in `EXPECTED_ARCHS`.
 
 Record the local DMG checksum printed by the block. After uploading and
 downloading through the intended sharing channel, run `shasum -a 256` on the
 download and compare it, then install that copy on a Mac without the signing
-certificate. Launch it and decode a known-good transaction, confirming the
-expected call or transfer summary. The command checks validate distribution
-metadata; this smoke test validates the packaged Electron and decoder path.
+certificate. Launch it with verbose output and decode this Base transaction:
+
+```text
+0x0e65f9293230c35cb4994fce91f44ac6360844376927e36ba2238783ba7521cc
+```
+
+Confirm the output reports `ABI: merged` (currently 104 functions), a
+`transferFrom` call, and `0.02475 USDC`. The command checks validate
+distribution metadata; this decode validates the packaged Electron,
+artifact-loading, and decoder path.
 
 ## 7. Keep the hardened-runtime settings intact
 
@@ -145,9 +186,12 @@ APPLE_TEAM_ID=ABCD1234
 Then:
 
 ```bash
+(
+set -euo pipefail
 rm -rf dist release
 set -a && source .env.notarize && set +a
 pnpm run build && pnpm run dist
+)
 ```
 
 ## Troubleshooting
