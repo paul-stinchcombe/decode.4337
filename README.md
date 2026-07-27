@@ -56,6 +56,8 @@ pnpm run app
 
 Paste a transaction hash, select a chain, optionally enable verbose output, and click Decode.
 
+For Electron process model, IPC (`window.txDecode`), packaging, RPC differences vs the CLI, and desktop troubleshooting, see **[docs/DESKTOP.md](./docs/DESKTOP.md)**.
+
 ## Build native installers
 
 ```bash
