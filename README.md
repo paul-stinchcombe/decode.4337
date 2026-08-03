@@ -69,6 +69,8 @@ Outputs to `release/` (e.g. `Decode 4337-1.0.0-arm64.dmg`):
 - **Windows:** NSIS installer, portable `.exe`
 - **Linux:** `.AppImage`, `.deb`
 
+For Windows/Linux packaging ops, artifact inclusion checks, and release verification, see **[docs/PACKAGING.md](./docs/PACKAGING.md)**. Mac signing/notarization: [docs/NOTARIZE-MAC.md](./docs/NOTARIZE-MAC.md).
+
 ## Scripts
 
 | Script           | Description                    |
