@@ -25,10 +25,12 @@ Custom chain IDs can be passed via the CLI `-c` option.
 ## Installation
 
 ```bash
-git clone <repo-url>
-cd decode.tx
+git clone https://github.com/paul-stinchcombe/decode.4337.git
+cd decode.4337
 pnpm install
 ```
+
+First-time desktop setup, local validation, and common pitfalls: **[docs/DEVELOPMENT.md](./docs/DEVELOPMENT.md)**.
 
 ## Usage
 
@@ -54,7 +56,7 @@ node node_modules/electron/install.js
 pnpm run app
 ```
 
-Paste a transaction hash, select a chain, optionally enable verbose output, and click Decode.
+Paste a transaction hash, select a chain, optionally enable verbose output, and click Decode. See [docs/DEVELOPMENT.md](./docs/DEVELOPMENT.md) if the Electron binary is missing after `pnpm install`.
 
 ## Build native installers
 
@@ -63,9 +65,9 @@ pnpm run build
 pnpm run dist
 ```
 
-Outputs to `release/` (e.g. `Decode 4337-1.0.0-arm64.dmg`):
+Outputs to `release/` (e.g. `Decode 4337-1.0.1-arm64.dmg`):
 
-- **Mac:** `.dmg`, `.zip`
+- **Mac:** `.dmg`, `.zip` — signing/notarization: [docs/NOTARIZE-MAC.md](./docs/NOTARIZE-MAC.md); sharing: [docs/SHARING-DMG.md](./docs/SHARING-DMG.md)
 - **Windows:** NSIS installer, portable `.exe`
 - **Linux:** `.AppImage`, `.deb`
 
@@ -91,7 +93,7 @@ Optional `.env` for custom RPC:
 BASE_RPC_URL=https://mainnet.base.org
 ```
 
-Used when decoding Base (chain 8453) transactions.
+Used by the **CLI only** when decoding Base (`8453`). The desktop app does not read this variable. Details: [docs/DEVELOPMENT.md](./docs/DEVELOPMENT.md).
 
 ## License
 
