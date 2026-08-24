@@ -25,8 +25,8 @@ Custom chain IDs can be passed via the CLI `-c` option.
 ## Installation
 
 ```bash
-git clone <repo-url>
-cd decode.tx
+git clone https://github.com/paul-stinchcombe/decode.4337.git
+cd decode.4337
 pnpm install
 ```
 
@@ -43,6 +43,19 @@ pnpm start -v <hash>        # Verbose output (full decode details)
 pnpm start -c 8453 <hash>   # Chain by ID (decimal)
 pnpm start -c 0x2105 <hash> # Chain by ID (hex)
 ```
+
+After `pnpm run build`, the same CLI is `node dist/cli.js`. Decode failures print to stderr but still exit `0` — see [docs/EMBEDDING.md](docs/EMBEDDING.md) if you need a structured result or a non-zero exit code.
+
+### Programmatic API
+
+The CLI and desktop app both call `decodeTransaction` from `src/decode.ts`. Embed it from Node (do not `require` the package `main`; that is the Electron entry):
+
+```js
+const { decodeTransaction } = require('./dist/decode');
+const result = await decodeTransaction(hash, 8453, false);
+```
+
+Full argument/result contract, RPC rules, and pitfalls: **[docs/EMBEDDING.md](docs/EMBEDDING.md)**.
 
 ### Desktop app
 
@@ -63,7 +76,7 @@ pnpm run build
 pnpm run dist
 ```
 
-Outputs to `release/` (e.g. `Decode 4337-1.0.0-arm64.dmg`):
+Outputs to `release/` (e.g. `Decode 4337-1.0.1-arm64.dmg`):
 
 - **Mac:** `.dmg`, `.zip`
 - **Windows:** NSIS installer, portable `.exe`
@@ -91,7 +104,13 @@ Optional `.env` for custom RPC:
 BASE_RPC_URL=https://mainnet.base.org
 ```
 
-Used when decoding Base (chain 8453) transactions.
+Used when decoding Base (chain 8453) transactions. The desktop app does not read this variable; embedders can pass any RPC URL as the fourth argument to `decodeTransaction`.
+
+## Docs
+
+- [Embedding the decoder](docs/EMBEDDING.md) — `decodeTransaction` API, result fields, RPC, CLI exit-code pitfall
+- [Sharing the Mac DMG](docs/SHARING-DMG.md) — quarantine workaround for unsigned downloads
+- [Signing & notarizing (Mac)](docs/NOTARIZE-MAC.md) — Developer ID + notarization for `pnpm run dist`
 
 ## License
 
