@@ -78,6 +78,8 @@ Outputs to `release/` (e.g. `Decode 4337-1.0.0-arm64.dmg`):
 | `pnpm run build` | Compile TypeScript             |
 | `pnpm run dist`  | Package native installers      |
 
+To add a chain, token symbol, fallback ABI function, or artifact-based `deploy (ContractName)` label, see **[docs/EXTENDING.md](docs/EXTENDING.md)**.
+
 ## Requirements
 
 - Node.js 18+
