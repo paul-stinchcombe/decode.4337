@@ -15,6 +15,8 @@ Available as a **CLI** and **Electron desktop app** for Mac, Windows, and Linux.
   - **From** – sender address
   - **Beneficiary** – bundler address receiving gas fees
 
+Supported vs skipped shapes (Entry Point versions, paymasters, native ETH-only UserOps, when a successful decode has no summary) are listed in **[docs/COVERAGE.md](docs/COVERAGE.md)**.
+
 ## Supported chains
 
 **Mainnets:** Base, Ethereum, Arbitrum, Optimism, Polygon, Soneium  
