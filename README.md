@@ -65,7 +65,7 @@ pnpm run dist
 
 Outputs to `release/` (e.g. `Decode 4337-1.0.0-arm64.dmg`):
 
-- **Mac:** `.dmg`, `.zip`
+- **Mac:** `.dmg`, `.zip` — signing uses `build/entitlements.mac.plist`; see [docs/ENTITLEMENTS.md](./docs/ENTITLEMENTS.md)
 - **Windows:** NSIS installer, portable `.exe`
 - **Linux:** `.AppImage`, `.deb`
 
