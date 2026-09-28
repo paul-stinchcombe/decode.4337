@@ -25,8 +25,8 @@ Custom chain IDs can be passed via the CLI `-c` option.
 ## Installation
 
 ```bash
-git clone <repo-url>
-cd decode.tx
+git clone https://github.com/paul-stinchcombe/decode.4337.git
+cd decode.4337
 pnpm install
 ```
 
@@ -92,6 +92,14 @@ BASE_RPC_URL=https://mainnet.base.org
 ```
 
 Used when decoding Base (chain 8453) transactions.
+
+## Documentation
+
+| Guide | Use it for |
+|-------|------------|
+| [docs/NOTARIZE-MAC.md](docs/NOTARIZE-MAC.md) | Signing and notarizing the Mac build |
+| [docs/SHARING-DMG.md](docs/SHARING-DMG.md) | “Damaged” DMG after download (quarantine) |
+| [docs/VERSIONS.md](docs/VERSIONS.md) | Which version string to bump, and which IDs are not the app version |
 
 ## License
 
