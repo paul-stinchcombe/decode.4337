@@ -93,6 +93,12 @@ BASE_RPC_URL=https://mainnet.base.org
 
 Used when decoding Base (chain 8453) transactions.
 
+## Documentation
+
+- [Verbose output](docs/VERBOSE.md) — line prefixes shared by the CLI and desktop, and which of those lines the desktop colors
+- [Signing and notarizing Mac builds](docs/NOTARIZE-MAC.md)
+- [Sharing a DMG](docs/SHARING-DMG.md)
+
 ## License
 
 MIT © [Paul Stinchcombe](https://www.paulstinchcombe.com)
