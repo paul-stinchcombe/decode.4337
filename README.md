@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A tool for decoding **Account Abstraction (ERC-4337)** transactions. Extracts the human-readable summary from `handleOps` calls on the Entry Point 0.7.0 contract—including SimpleAccount-style transfers—so you can see the formatted amount, token, sender, and beneficiary at a glance.
+A tool for decoding **Account Abstraction (ERC-4337)** transactions. Extracts the human-readable summary from `handleOps` calls on the Entry Point 0.7.0 contract—including SimpleAccount-style transfers—so you can see the formatted amount, token, and gas beneficiary at a glance.
 
 Available as a **CLI** and **Electron desktop app** for Mac, Windows, and Linux.
 
@@ -10,10 +10,10 @@ Available as a **CLI** and **Electron desktop app** for Mac, Windows, and Linux.
 
 - Decodes transactions that bundle UserOperations via `handleOps()` on the Entry Point 0.7.0 contract
 - Extracts nested calls from SimpleAccount `execute()` (e.g. ERC-20 `transferFrom`)
-- Produces a summary with:
-  - **Amount** – formatted with token symbol (e.g. `0.02475 USDC`)
-  - **From** – sender address
-  - **Beneficiary** – bundler address receiving gas fees
+- When that inner call is ERC-20 `transfer` or `transferFrom`, also prints one **Summary** (see [docs/SUMMARY.md](docs/SUMMARY.md)):
+  - **Amount** – formatted when the target is Base USDC or WETH (sample: `0.02475 USDC`); otherwise the raw integer plus `(unknown token)`
+  - **From** – the token `from` argument on `transferFrom`, or the smart-account sender on `transfer`
+  - **Beneficiary** – the `handleOps` beneficiary (the address paid for gas)
 
 ## Supported chains
 
@@ -92,6 +92,12 @@ BASE_RPC_URL=https://mainnet.base.org
 ```
 
 Used when decoding Base (chain 8453) transactions.
+
+## Documentation
+
+- [Summary fields](docs/SUMMARY.md) – when Amount / From / Beneficiary are set, and which address each one uses
+- [Sharing a DMG](docs/SHARING-DMG.md) – quarantine workaround for an unsigned Mac download
+- [Signing and notarizing](docs/NOTARIZE-MAC.md) – Developer ID certificate, env vars, and `pnpm run dist`
 
 ## License
 
