@@ -93,6 +93,12 @@ BASE_RPC_URL=https://mainnet.base.org
 
 Used when decoding Base (chain 8453) transactions.
 
+## Documentation
+
+- [Call argument names](docs/ARGUMENTS.md) – which ABI entry supplies `args` labels, including ERC-721 `transferFrom` and KAMI `mintFor`
+- [Sharing a DMG](docs/SHARING-DMG.md) – quarantine workaround for an unsigned Mac download
+- [Signing and notarizing](docs/NOTARIZE-MAC.md) – Developer ID certificate, env vars, and `pnpm run dist`
+
 ## License
 
 MIT © [Paul Stinchcombe](https://www.paulstinchcombe.com)
