@@ -93,6 +93,12 @@ BASE_RPC_URL=https://mainnet.base.org
 
 Used when decoding Base (chain 8453) transactions.
 
+## Documentation
+
+- [Deploy labels](docs/DEPLOY-LABELS.md) – which artifact bytecode turns `deploy` into `deploy (KAMI721C)`, including short library prefixes
+- [Sharing a DMG](docs/SHARING-DMG.md) – quarantine workaround for an unsigned Mac download
+- [Signing and notarizing](docs/NOTARIZE-MAC.md) – Developer ID certificate, env vars, and `pnpm run dist`
+
 ## License
 
 MIT © [Paul Stinchcombe](https://www.paulstinchcombe.com)
