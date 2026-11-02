@@ -91,7 +91,13 @@ Optional `.env` for custom RPC:
 BASE_RPC_URL=https://mainnet.base.org
 ```
 
-Used when decoding Base (chain 8453) transactions.
+Used by the CLI when the chain id is Base (`8453`). Other chains, and the desktop app, use the hosts in [docs/RPC.md](docs/RPC.md).
+
+## Documentation
+
+- [RPC hosts and chain IDs](docs/RPC.md) — endpoint for each chain, `BASE_RPC_URL`, and `-c` parsing
+- [Sharing a DMG](docs/SHARING-DMG.md) — quarantine workaround for an unsigned download
+- [Mac signing and notarization](docs/NOTARIZE-MAC.md) — Developer ID, env vars, and `pnpm run dist`
 
 ## License
 
