@@ -93,6 +93,12 @@ BASE_RPC_URL=https://mainnet.base.org
 
 Used when decoding Base (chain 8453) transactions.
 
+## Documentation
+
+- [CLI output](docs/CLI.md) — stdout, stderr, and which failures exit 0
+- [Sharing a DMG](docs/SHARING-DMG.md) — quarantine workaround for an unsigned download
+- [Mac signing and notarization](docs/NOTARIZE-MAC.md) — Developer ID, env vars, and `pnpm run dist`
+
 ## License
 
 MIT © [Paul Stinchcombe](https://www.paulstinchcombe.com)
